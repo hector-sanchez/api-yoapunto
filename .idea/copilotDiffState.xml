@@ -12,6 +12,22 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="$PROJECT_DIR$/.env.example">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/.env.example" />
+              <option name="updatedContent" value="# Example environment configuration&#10;# Copy this file to .env and update with your actual values&#10;&#10;DATABASE_URL=sqlite:///./yoapunto.db&#10;# For PostgreSQL: postgresql://username:password@localhost/database_name" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/.gitignore">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/.gitignore" />
+              <option name="updatedContent" value="# Byte-compiled / optimized / DLL files&#10;__pycache__/&#10;*.py[cod]&#10;*$py.class&#10;&#10;# Virtual environments&#10;.venv/&#10;venv/&#10;env/&#10;ENV/&#10;&#10;# Environment variables (contains secrets!)&#10;.env&#10;.env.*&#10;&#10;# IDE files&#10;.idea/&#10;.vscode/&#10;*.swp&#10;*.swo&#10;&#10;# Test and coverage files&#10;.pytest_cache/&#10;.coverage&#10;htmlcov/&#10;.tox/&#10;.cache&#10;*.cover&#10;&#10;# Database files&#10;*.db&#10;*.sqlite&#10;*.sqlite3&#10;yoapunto.db&#10;test_yoapunto.db&#10;&#10;# OS files&#10;.DS_Store&#10;Thumbs.db&#10;&#10;# Logs&#10;*.log&#10;&#10;# Distribution / packaging&#10;build/&#10;dist/&#10;*.egg-info/&#10;&#10;# mypy&#10;.mypy_cache/" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
         <entry key="$PROJECT_DIR$/app/__init__.py">
           <value>
             <PendingDiffInfo>
