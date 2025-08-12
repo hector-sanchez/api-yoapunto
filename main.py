@@ -9,8 +9,8 @@ from fastapi import FastAPI
 from app.api.v1.api import api_router
 from database import engine, Base
 # Import models to register them with Base - this is important!
-# Without this import, SQLAlchemy won't know about our Club model
-from app.models import club
+# Without this import, SQLAlchemy won't know about our Club and Game models
+from app.models import club, game
 
 # Create all database tables on startup
 # This line tells SQLAlchemy to create any missing tables in the database
