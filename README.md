@@ -1,17 +1,19 @@
 # YoApunto API
 
-A modern FastAPI-based REST API for managing clubs with comprehensive CRUD operations, validation, and soft delete functionality.
+A modern FastAPI-based REST API for managing clubs and games with comprehensive CRUD operations, many-to-many associations, validation, and soft delete functionality.
 
 ## Features
 
 - 🚀 **FastAPI** - Modern, fast web framework for building APIs
-- 🗄️ **SQLAlchemy** - Powerful SQL toolkit and ORM
+- 🗄️ **SQLAlchemy** - Powerful SQL toolkit and ORM with many-to-many relationships
 - ✅ **Pydantic** - Data validation using Python type hints
-- 🧪 **Comprehensive Testing** - Unit and integration tests with pytest
-- 🔄 **Soft Delete** - Clubs are deactivated, not permanently deleted
+- 🧪 **Comprehensive Testing** - Unit and integration tests with pytest organized by entity
+- 🔄 **Soft Delete** - Clubs and games are deactivated, not permanently deleted
 - 📝 **Input Validation** - Field length limits and required field validation
 - 🏗️ **Clean Architecture** - Organized code structure with separation of concerns
 - 📚 **Auto-generated Documentation** - Interactive API docs with Swagger UI
+- 🔗 **Entity Associations** - Many-to-many relationships between clubs and games
+- 🎮 **Game Management** - Complete game system with player/team composition rules
 
 ## Project Structure
 
@@ -21,18 +23,32 @@ api.yoapunto/
 │   ├── api/
 │   │   └── v1/
 │   │       ├── endpoints/
-│   │       │   └── clubs.py          # Club API endpoints
+│   │       │   ├── clubs.py          # Club API endpoints
+│   │       │   ├── games.py          # Game API endpoints
+│   │       │   └── club_games.py     # Club-Game association endpoints
 │   │       └── api.py                # API router configuration
 │   ├── crud/
-│   │   └── club.py                   # Database operations
+│   │   ├── club.py                   # Club database operations
+│   │   └── game.py                   # Game database operations
 │   ├── models/
-│   │   └── club.py                   # SQLAlchemy models
+│   │   ├── club.py                   # Club SQLAlchemy model
+│   │   ├── game.py                   # Game SQLAlchemy model
+│   │   └── club_games.py             # Many-to-many association table
 │   └── schemas/
-│       └── club.py                   # Pydantic schemas
+│       ├── club.py                   # Club Pydantic schemas
+│       └── game.py                   # Game Pydantic schemas
 ├── tests/
-│   ├── test_api.py                   # API endpoint tests
-│   ├── test_crud.py                  # CRUD operation tests
-│   └── test_models.py                # Model tests
+│   ├── clubs/                        # Club-specific tests
+│   │   ├── test_clubs_api.py         # Club API endpoint tests
+│   │   ├── test_clubs_crud.py        # Club CRUD operation tests
+│   │   ├── test_clubs_models.py      # Club model tests
+│   │   └── test_clubs_games.py       # Club-Games association tests
+│   ├── games/                        # Game-specific tests
+│   │   ├── test_games_api.py         # Game API endpoint tests
+│   │   ├── test_games_crud.py        # Game CRUD operation tests
+│   │   ├── test_games_models.py      # Game model tests
+│   │   └── test_games_clubs.py       # Game-Clubs relationship tests
+│   └── conftest.py                   # Shared test configuration
 ├── conftest.py                       # Test configuration
 ├── database.py                       # Database setup
 ├── main.py                           # FastAPI application
@@ -100,6 +116,25 @@ Once the server is running, you can access:
 | `PUT` | `/api/v1/clubs/{id}` | Update a club |
 | `DELETE` | `/api/v1/clubs/{id}` | Deactivate a club (soft delete) |
 
+### Games
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/games/` | List all active games |
+| `POST` | `/api/v1/games/` | Create a new game |
+| `GET` | `/api/v1/games/{id}` | Get a specific game |
+| `PUT` | `/api/v1/games/{id}` | Update a game |
+| `DELETE` | `/api/v1/games/{id}` | Deactivate a game (soft delete) |
+
+### Club-Games Associations (Nested Resources)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/clubs/{club_id}/games/` | Get all games that a club plays |
+| `POST` | `/api/v1/clubs/{club_id}/games/{game_id}` | Add a game to a club |
+| `GET` | `/api/v1/clubs/{club_id}/games/{game_id}` | Check if a club plays a specific game |
+| `DELETE` | `/api/v1/clubs/{club_id}/games/{game_id}` | Remove a game from a club |
+
 ### Club Model
 
 ```json
@@ -114,12 +149,46 @@ Once the server is running, you can access:
 }
 ```
 
+### Game Model
+
+```json
+{
+  "id": 1,
+  "name": "Basketball",
+  "description": "Team sport with two teams of five players",
+  "game_composition": "team",
+  "min_number_of_teams": 2,
+  "max_number_of_teams": 2,
+  "min_number_of_players": 10,
+  "max_number_of_players": 10,
+  "min_number_of_players_per_teams": 5,
+  "max_number_of_players_per_teams": 5,
+  "thumbnail": "https://example.com/basketball.jpg",
+  "active": true,
+  "created_at": "2025-08-13T10:30:00Z",
+  "updated_at": "2025-08-13T10:30:00Z"
+}
+```
+
 #### Field Validation
 
+**Club Fields:**
 - **nickname**: Required, 1-50 characters
 - **creator**: Required, 1-50 characters
 - **thumbnail_url**: Optional, URL to club image
 - **active**: Boolean, defaults to `true`
+
+**Game Fields:**
+- **name**: Required, 1-100 characters
+- **description**: Optional, up to 500 characters
+- **game_composition**: Required, 1-50 characters (e.g., "player", "team", "player_or_team")
+- **min_number_of_players**: Required, must be >= 1
+- **max_number_of_players**: Optional, must be >= 1 if specified
+- **min_number_of_teams**: Optional, must be >= 1 if specified
+- **max_number_of_teams**: Optional, must be >= 1 if specified
+- **min_number_of_players_per_teams**: Optional, must be >= 1 if specified
+- **max_number_of_players_per_teams**: Optional, must be >= 1 if specified
+- **thumbnail**: Optional, URL or path to game thumbnail image
 
 ### Example Requests
 
@@ -134,18 +203,37 @@ curl -X POST "http://localhost:8000/api/v1/clubs/" \
      }'
 ```
 
-**Get all clubs:**
+**Create a game:**
 ```bash
-curl "http://localhost:8000/api/v1/clubs/"
-```
-
-**Update a club:**
-```bash
-curl -X PUT "http://localhost:8000/api/v1/clubs/1" \
+curl -X POST "http://localhost:8000/api/v1/games/" \
      -H "Content-Type: application/json" \
      -d '{
-       "nickname": "Updated Club Name"
+       "name": "Basketball",
+       "description": "Team sport with two teams of five players",
+       "game_composition": "team",
+       "min_number_of_teams": 2,
+       "max_number_of_teams": 2,
+       "min_number_of_players": 10,
+       "max_number_of_players": 10,
+       "min_number_of_players_per_teams": 5,
+       "max_number_of_players_per_teams": 5,
+       "thumbnail": "https://example.com/basketball.jpg"
      }'
+```
+
+**Add a game to a club:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/clubs/1/games/1"
+```
+
+**Get all games for a club:**
+```bash
+curl "http://localhost:8000/api/v1/clubs/1/games/"
+```
+
+**Remove a game from a club:**
+```bash
+curl -X DELETE "http://localhost:8000/api/v1/clubs/1/games/1"
 ```
 
 ## Database Configuration
@@ -164,7 +252,7 @@ DATABASE_URL=postgresql://username:password@localhost/database_name
 
 ## Testing
 
-The project includes comprehensive tests at multiple levels:
+The project includes comprehensive tests at multiple levels, organized by entity:
 
 ### Run All Tests
 ```bash
@@ -173,11 +261,11 @@ pytest
 
 ### Run Specific Test Categories
 ```bash
-# Model tests
-pytest tests/test_models.py -v
+# Club tests
+pytest tests/clubs -v
 
-# CRUD tests
-pytest tests/test_crud.py -v
+# Game tests
+pytest tests/games -v
 
 # API tests
 pytest tests/test_api.py -v
