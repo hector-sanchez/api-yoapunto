@@ -7,8 +7,11 @@ Games define the rules and structure for activities that clubs can organize.
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+# Import the association table
+from .club_games import club_games
 
 class Game(Base):
     """
@@ -60,3 +63,12 @@ class Game(Base):
     # Automatic timestamps for record creation and updates
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Many-to-many relationship with clubs
+    # This allows a game to belong to multiple clubs, and a club to have multiple games
+    clubs = relationship(
+        "Club",
+        secondary=club_games,
+        back_populates="games",
+        lazy="select"  # Load clubs when accessed
+    )

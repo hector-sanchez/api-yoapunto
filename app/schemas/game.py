@@ -7,7 +7,7 @@ They handle validation for game creation, updates, and responses.
 
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # Base schema with common game fields
 class GameBase(BaseModel):
@@ -84,3 +84,22 @@ class Game(GameBase):
         from_attributes=True allows creating this schema from SQLAlchemy model objects.
         """
         from_attributes = True
+
+# Extended schema that includes the clubs relationship
+# This is useful when you want to return a game with all clubs that play it
+class GameWithClubs(Game):
+    """
+    Schema for returning game data with associated clubs
+
+    This extends the basic Game schema to include the list of clubs
+    that play this game. Useful for detailed game information.
+    """
+    clubs: List['Club'] = []  # List of clubs that play this game
+
+    class Config:
+        from_attributes = True
+
+# Forward reference resolution for the clubs relationship
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.schemas.club import Club

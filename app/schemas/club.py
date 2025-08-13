@@ -8,7 +8,7 @@ This is separate from the database model - schemas are for the API, models are f
 
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # Base schema with common fields
 # Other schemas inherit from this to avoid repeating the same fields
@@ -74,3 +74,23 @@ class Club(ClubBase):
         This is what allows us to return database objects from our API endpoints.
         """
         from_attributes = True
+
+# Extended schema that includes the games relationship
+# This is useful when you want to return a club with all its associated games
+class ClubWithGames(Club):
+    """
+    Schema for returning club data with associated games
+
+    This extends the basic Club schema to include the list of games
+    that this club plays. Useful for detailed club information.
+    """
+    games: List['Game'] = []  # List of games this club plays
+
+    class Config:
+        from_attributes = True
+
+# Forward reference resolution for the games relationship
+# This is needed because we're referencing Game schema before it's defined
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.schemas.game import Game

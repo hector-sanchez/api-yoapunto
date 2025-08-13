@@ -6,8 +6,11 @@ The Club class represents how club data is stored in the database.
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+# Import the association table
+from .club_games import club_games
 
 class Club(Base):
     """
@@ -48,3 +51,12 @@ class Club(Base):
     # Automatic timestamp when the record is updated
     # onupdate means this gets updated every time the record changes
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Many-to-many relationship with games
+    # This allows a club to have multiple games, and a game to belong to multiple clubs
+    games = relationship(
+        "Game",
+        secondary=club_games,
+        back_populates="clubs",
+        lazy="select"  # Load games when accessed
+    )
