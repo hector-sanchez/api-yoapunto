@@ -1,3 +1,10 @@
+"""
+Club CRUD Tests
+
+Unit tests for Club CRUD operations.
+Tests database interactions and business logic for club operations.
+"""
+
 import pytest
 from app.crud.club import create_club, get_clubs, get_club, update_club, deactivate_club
 from app.schemas import ClubCreate, ClubUpdate

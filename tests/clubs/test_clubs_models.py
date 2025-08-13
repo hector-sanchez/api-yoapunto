@@ -1,3 +1,10 @@
+"""
+Club Model Tests
+
+Unit tests for the Club SQLAlchemy model.
+Tests database model behavior, validation, and field constraints.
+"""
+
 import pytest
 from datetime import datetime
 from app.models import Club

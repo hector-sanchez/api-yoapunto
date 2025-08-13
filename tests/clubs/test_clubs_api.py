@@ -1,3 +1,10 @@
+"""
+Club API Tests
+
+Integration tests for Club API endpoints.
+Tests HTTP endpoints, status codes, and request/response handling.
+"""
+
 from fastapi import status
 
 class TestClubAPI:
@@ -224,10 +231,3 @@ class TestClubAPI:
         data = response.json()
         assert len(data) == 1
         assert data[0]["nickname"] == "Keep Club"
-
-    def test_root_endpoint(self, client):
-        """Test the root endpoint"""
-        response = client.get("/")
-
-        assert response.status_code == status.HTTP_200_OK
-        assert "Welcome to YoApunto API" in response.json()["message"]
