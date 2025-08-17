@@ -1,14 +1,17 @@
 # YoApunto API
 
-A modern FastAPI-based REST API for managing clubs and games with comprehensive CRUD operations, many-to-many associations, validation, and soft delete functionality.
+A modern FastAPI-based REST API for managing accounts, clubs and games with comprehensive CRUD operations, many-to-many associations, authentication, validation, and soft delete functionality.
 
 ## Features
 
 - 🚀 **FastAPI** - Modern, fast web framework for building APIs
-- 🗄️ **SQLAlchemy** - Powerful SQL toolkit and ORM with many-to-many relationships
+- � **User Management** - Complete account system with authentication and profile management
+- 🔐 **Password Security** - Secure password hashing with bcrypt
+- 📧 **Email Validation** - Built-in email validation and uniqueness constraints
+- �🗄️ **SQLAlchemy** - Powerful SQL toolkit and ORM with many-to-many relationships
 - ✅ **Pydantic** - Data validation using Python type hints
 - 🧪 **Comprehensive Testing** - Unit and integration tests with pytest organized by entity
-- 🔄 **Soft Delete** - Clubs and games are deactivated, not permanently deleted
+- 🔄 **Soft Delete** - Accounts, clubs and games are deactivated, not permanently deleted
 - 📝 **Input Validation** - Field length limits and required field validation
 - 🏗️ **Clean Architecture** - Organized code structure with separation of concerns
 - 📚 **Auto-generated Documentation** - Interactive API docs with Swagger UI
@@ -23,21 +26,29 @@ api.yoapunto/
 │   ├── api/
 │   │   └── v1/
 │   │       ├── endpoints/
+│   │       │   ├── accounts.py        # Account API endpoints
 │   │       │   ├── clubs.py          # Club API endpoints
 │   │       │   ├── games.py          # Game API endpoints
 │   │       │   └── club_games.py     # Club-Game association endpoints
 │   │       └── api.py                # API router configuration
 │   ├── crud/
+│   │   ├── account.py                # Account database operations
 │   │   ├── club.py                   # Club database operations
 │   │   └── game.py                   # Game database operations
 │   ├── models/
+│   │   ├── account.py                # Account SQLAlchemy model
 │   │   ├── club.py                   # Club SQLAlchemy model
 │   │   ├── game.py                   # Game SQLAlchemy model
 │   │   └── club_games.py             # Many-to-many association table
 │   └── schemas/
+│       ├── account.py                # Account Pydantic schemas
 │       ├── club.py                   # Club Pydantic schemas
 │       └── game.py                   # Game Pydantic schemas
 ├── tests/
+│   ├── accounts/                     # Account-specific tests
+│   │   ├── test_accounts_api.py      # Account API endpoint tests
+│   │   ├── test_accounts_crud.py     # Account CRUD operation tests
+│   │   └── test_accounts_models.py   # Account model tests
 │   ├── clubs/                        # Club-specific tests
 │   │   ├── test_clubs_api.py         # Club API endpoint tests
 │   │   ├── test_clubs_crud.py        # Club CRUD operation tests
@@ -106,6 +117,17 @@ Once the server is running, you can access:
 
 ## API Endpoints
 
+### Accounts
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/accounts/` | List all active accounts |
+| `POST` | `/api/v1/accounts/` | Create a new account |
+| `GET` | `/api/v1/accounts/{id}` | Get a specific account |
+| `PUT` | `/api/v1/accounts/{id}` | Update an account |
+| `DELETE` | `/api/v1/accounts/{id}` | Deactivate an account (soft delete) |
+| `GET` | `/api/v1/accounts/club/{club_id}` | Get all accounts for a specific club |
+
 ### Clubs
 
 | Method | Endpoint | Description |
@@ -134,6 +156,21 @@ Once the server is running, you can access:
 | `POST` | `/api/v1/clubs/{club_id}/games/{game_id}` | Add a game to a club |
 | `GET` | `/api/v1/clubs/{club_id}/games/{game_id}` | Check if a club plays a specific game |
 | `DELETE` | `/api/v1/clubs/{club_id}/games/{game_id}` | Remove a game from a club |
+
+### Account Model
+
+```json
+{
+  "id": 1,
+  "email": "user@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "club_id": 1,
+  "active": true,
+  "created_at": "2025-08-17T10:30:00Z",
+  "updated_at": "2025-08-17T10:30:00Z"
+}
+```
 
 ### Club Model
 
@@ -172,6 +209,14 @@ Once the server is running, you can access:
 
 #### Field Validation
 
+**Account Fields:**
+- **email**: Required, valid email format, unique across all accounts
+- **first_name**: Required, 1-50 characters
+- **last_name**: Required, 1-50 characters
+- **password**: Required for creation, 8-100 characters (hashed in database)
+- **club_id**: Optional, foreign key reference to clubs table
+- **active**: Boolean, defaults to `true`
+
 **Club Fields:**
 - **nickname**: Required, 1-50 characters
 - **creator**: Required, 1-50 characters
@@ -191,6 +236,44 @@ Once the server is running, you can access:
 - **thumbnail**: Optional, URL or path to game thumbnail image
 
 ### Example Requests
+
+**Create an account:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/accounts/" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "john.doe@example.com",
+       "first_name": "John",
+       "last_name": "Doe",
+       "password": "securepassword123",
+       "club_id": 1
+     }'
+```
+
+**Update an account:**
+```bash
+curl -X PUT "http://localhost:8000/api/v1/accounts/1" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "first_name": "Johnny",
+       "last_name": "Smith"
+     }'
+```
+
+**Update account password:**
+```bash
+curl -X PUT "http://localhost:8000/api/v1/accounts/1" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "current_password": "oldpassword123",
+       "new_password": "newpassword456"
+     }'
+```
+
+**Get accounts for a specific club:**
+```bash
+curl "http://localhost:8000/api/v1/accounts/club/1"
+```
 
 **Create a club:**
 ```bash
@@ -261,6 +344,9 @@ pytest
 
 ### Run Specific Test Categories
 ```bash
+# Account tests
+pytest tests/accounts -v
+
 # Club tests
 pytest tests/clubs -v
 
@@ -268,7 +354,7 @@ pytest tests/clubs -v
 pytest tests/games -v
 
 # API tests
-pytest tests/test_accounts_api.py -v
+pytest tests/*/test_*_api.py -v
 ```
 
 ### Run Tests with Coverage
@@ -356,6 +442,9 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 - **Pydantic** - Data validation
 - **psycopg** - PostgreSQL adapter
 - **python-dotenv** - Environment variable management
+- **bcrypt** - Password hashing
+- **passlib** - Password context management
+- **email-validator** - Email validation
 
 ### Development Dependencies
 - **pytest** - Testing framework
@@ -376,9 +465,13 @@ If you encounter any issues or have questions:
 
 ## Roadmap
 
-- [ ] Club membership management
+- [ ] User authentication with JWT tokens
+- [ ] User roles and permissions system
+- [ ] Club membership management with account associations
 - [ ] Enter Game integration
 - [ ] Associate clubs with games where the relationship with clubs and games is many-to-many
+- [ ] Password reset functionality
+- [ ] Email notifications
 - [ ] API rate limiting
 - [ ] Docker containerization
 - [ ] CI/CD pipeline setup

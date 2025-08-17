@@ -519,4 +519,4 @@ class TestAccountCRUD:
     def test_deactivate_account_not_found(self, db):
         """Test deactivating non-existent account"""
         result = deactivate_account(db=db, account_id=99999)
-        assert result is None   
+        assert result is None
