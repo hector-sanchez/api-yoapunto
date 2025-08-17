@@ -268,7 +268,7 @@ pytest tests/clubs -v
 pytest tests/games -v
 
 # API tests
-pytest tests/test_api.py -v
+pytest tests/test_accounts_api.py -v
 ```
 
 ### Run Tests with Coverage

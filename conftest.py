@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 from database import Base, get_db
 from main import app
 # Import models the SAME way as main.py does - this registers them with SQLAlchemy
-from app.models import club
+from app.models import club, account, game  # Add any other models you have
 
 # Test database configuration
 # We use a separate SQLite file for tests to avoid interfering with real data

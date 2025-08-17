@@ -60,3 +60,7 @@ class Club(Base):
         back_populates="clubs",
         lazy="select"  # Load games when accessed
     )
+
+    # One-to-many relationship with accounts
+    # This allows a club to have multiple user accounts for authentication
+    accounts = relationship("Account", back_populates="club")
