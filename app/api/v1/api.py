@@ -7,7 +7,7 @@ later add a v2 folder with different endpoints while keeping v1 working.
 """
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import clubs, games, club_games, accounts
+from app.api.v1.endpoints import clubs, games, club_games, accounts, auth
 
 # Create the main API router for version 1
 # This will collect all the individual endpoint routers
@@ -34,3 +34,8 @@ api_router.include_router(club_games.router, prefix="/clubs/{club_id}/games", ta
 # prefix="/accounts" means all account endpoints will be under /accounts/
 # tags=["accounts"] groups these endpoints in the API documentation
 api_router.include_router(accounts.router, prefix="/accounts", tags=["accounts"])
+
+# Include the auth router
+# prefix="/auth" means all account endpoints will be under /auth/
+# tags=["auth"] groups these endpoints in the API documentation
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])

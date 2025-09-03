@@ -15,7 +15,7 @@ from app.crud.account import (
     get_club_accounts, update_account,
     update_account_password, deactivate_account
 )
-from app.crud.club import get_club
+from app.crud.club import get_club  # Add this import
 from database import get_db
 
 # Create router for account endpoints
@@ -23,39 +23,29 @@ router = APIRouter()
 
 @router.post("/", response_model=Account)
 def create_account_endpoint(account: AccountCreate, db: Session = Depends(get_db)):
-    """
-    Create a new account (HTTP POST)
+    """Create a new account"""
+    try:
+        # Check if email already exists
+        existing_account = get_account_by_email(db, account.email_address)
+        if existing_account:
+            raise HTTPException(
+                status_code=400,
+                detail="Email address already registered"  # Fix: match test expectation
+            )
 
-    Creates a new user account associated with a club. The password is automatically
-    hashed before storing in the database for security.
+        # Validate club exists if club_id is provided
+        if account.club_id:
+            existing_club = get_club(db, account.club_id)
+            if not existing_club:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Club not found"
+                )
 
-    Args:
-        account: AccountCreate schema with account data from request JSON
-        db: Database session (dependency injection)
-
-    Returns:
-        Account: The newly created account (password_digest excluded for security)
-
-    Raises:
-        HTTPException: 400 if email already exists or club not found
-    """
-    # Check if club exists
-    club = get_club(db=db, club_id=account.club_id)
-    if not club:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Club not found"
-        )
-
-    # Check if email already exists
-    existing_account = get_account_by_email(db=db, email_address=account.email_address)
-    if existing_account:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email address already registered"
-        )
-
-    return create_account(db=db, account=account)
+        db_account = create_account(db=db, account=account)
+        return db_account
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/", response_model=List[Account])
 def read_accounts(
@@ -137,40 +127,40 @@ def read_club_accounts(
 @router.put("/{account_id}", response_model=Account)
 def update_account_endpoint(
     account_id: int,
-    account: AccountUpdate,
+    account_update: AccountUpdate,
     db: Session = Depends(get_db)
 ):
-    """
-    Update an account by ID (HTTP PUT)
+    """Update an account"""
+    try:
+        # Check if email already exists (if being updated)
+        if account_update.email_address:
+            existing_account = get_account_by_email(
+                db, account_update.email_address)
+            if existing_account and existing_account.id != account_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email address already registered"
+                )
 
-    Allows updating account information by account ID.
-    Password updates should use the separate password update endpoint.
+        # Validate club exists if club_id is being updated (only if field exists)
+        if hasattr(account_update, 'club_id') and account_update.club_id:
+            existing_club = get_club(db, account_update.club_id)
+            if not existing_club:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Club not found"
+                )
 
-    Args:
-        account_id: ID of the account to update (from URL path)
-        account: AccountUpdate schema with new data (from request JSON)
-        db: Database session (dependency injection)
-
-    Returns:
-        Account: The updated account with all current values
-
-    Raises:
-        HTTPException: 400 if email already exists (when updating email)
-        HTTPException: 404 if account not found
-    """
-    # If updating email, check it doesn't already exist
-    if account.email_address:
-        existing_account = get_account_by_email(db=db, email_address=account.email_address)
-        if existing_account and existing_account.id != account_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email address already registered"
-            )
-
-    updated_account = update_account(db=db, account_id=account_id, account=account)
-    if updated_account is None:
-        raise HTTPException(status_code=404, detail="Account not found")
-    return updated_account
+        db_account = update_account(
+            db=db,
+            account_id=account_id,
+            account_update=account_update
+        )
+        if db_account is None:
+            raise HTTPException(status_code=404, detail="Account not found")
+        return db_account
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/{account_id}/password", response_model=Account)
 def update_account_password_endpoint(

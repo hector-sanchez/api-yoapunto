@@ -1,5 +1,5 @@
 """
-JWT Authentication Utilities
+JWT Authentication Helper Utilities
 
 This module handles JWT token creation, validation, and authentication dependencies
 for the YoApunto API. It provides secure token-based authentication for user accounts.
@@ -7,27 +7,33 @@ for the YoApunto API. It provides secure token-based authentication for user acc
 
 import os
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 from database import get_db
-from app.crud.account import get_account
+from app.crud.account import get_account, get_account_by_email
 from app.models.account import Account
 
 load_dotenv()
 
 # JWT Configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
+SECRET_KEY = os.getenv(
+    "SECRET_KEY", "your-secret-key-change-this-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(
+    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Security schemes
 security = HTTPBearer()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """
@@ -47,8 +53,12 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"exp": expire})
+    # Ensure 'sub' is a string
+    if "sub" in to_encode:
+        to_encode["sub"] = str(to_encode["sub"])
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 def verify_token(token: str) -> Optional[dict]:
     """
@@ -65,6 +75,44 @@ def verify_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """
+    Create a JWT refresh token
+
+    Args:
+        data: Dictionary of data to encode in the token (usually user ID and email)
+        expires_delta: Optional custom expiration time
+
+    Returns:
+        str: Encoded JWT refresh token
+    """
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(days=7))
+    to_encode.update({"exp": expire})
+    # Ensure 'sub' is a string
+    if "sub" in to_encode:
+        to_encode["sub"] = str(to_encode["sub"])
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_refresh_token(token: str) -> Optional[dict]:
+    """
+    Verify and decode a JWT refresh token
+
+    Args:
+        token: JWT refresh token to verify
+
+    Returns:
+        dict or None: Decoded token payload if valid, None if invalid
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
 
 def get_current_account(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -102,12 +150,19 @@ def get_current_account(
     if account_id is None:
         raise credentials_exception
 
+    # Convert back to int since account_id should be an integer
+    try:
+        account_id = int(account_id)
+    except (ValueError, TypeError):
+        raise credentials_exception
+
     # Get account from database
-    account = get_account(db, account_id=int(account_id))
+    account = get_account(db, account_id=account_id)
     if account is None:
         raise credentials_exception
 
     return account
+
 
 def get_current_active_account(
     current_account: Account = Depends(get_current_account)
@@ -134,6 +189,8 @@ def get_current_active_account(
     return current_account
 
 # Optional dependency for endpoints that work with or without authentication
+
+
 def get_current_account_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
@@ -162,4 +219,10 @@ def get_current_account_optional(
     if account_id is None:
         return None
 
-    return get_account(db, account_id=int(account_id))
+    # Convert back to int
+    try:
+        account_id = int(account_id)
+    except (ValueError, TypeError):
+        return None
+
+    return get_account(db, account_id=account_id)

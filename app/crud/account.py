@@ -1,19 +1,19 @@
 """
 Account CRUD Operations
 
-This module contains all the database operations for working with user accounts.
-These functions handle creating, reading, updating, and deactivating accounts,
-including secure password hashing and authentication verification.
+This module handles all database operations for account management,
+including creation, retrieval, updates, and soft deletion of user accounts.
 """
 
+from datetime import datetime  # Add this import
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from passlib.context import CryptContext
+
 from app.models.account import Account
 from app.schemas.account import AccountCreate, AccountUpdate, AccountPasswordUpdate
 
-# Password hashing configuration
-# Using bcrypt for secure password hashing
+# Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
@@ -52,21 +52,26 @@ def create_account(db: Session, account: AccountCreate):
     Returns:
         Account: The newly created account object
     """
-    # Hash the password before storing
-    hashed_password = hash_password(account.password)
+    # Check if email already exists
+    existing_account = get_account_by_email(db, account.email_address)
+    if existing_account:
+        raise ValueError("Email already registered")
 
-    # Create account with hashed password (exclude plain password from model_dump)
-    account_data = account.model_dump(exclude={'password'})
+    # Hash the password
+    hashed_password = pwd_context.hash(account.password)
+
+    # Create the account
     db_account = Account(
-        **account_data,
-        password_digest=hashed_password
+        email_address=account.email_address,
+        password_digest=hashed_password,
+        first_name=account.first_name,
+        last_name=account.last_name,
+        club_id=account.club_id,
+        active=True
     )
-
-    # Add to database session and commit
     db.add(db_account)
     db.commit()
     db.refresh(db_account)
-
     return db_account
 
 def get_accounts(db: Session, skip: int = 0, limit: int = 100):
@@ -99,20 +104,19 @@ def get_account(db: Session, account_id: int):
         and_(Account.id == account_id, Account.active == True)
     ).first()
 
-def get_account_by_email(db: Session, email_address: str):
+
+def get_account_by_email(db: Session, email: str) -> Account | None:
     """
-    Get an account by email address (for authentication)
+    Retrieve an account by email address.
 
     Args:
-        db: Database session
-        email_address: Email address to search for
+        db (Session): SQLAlchemy session
+        email (str): Email address to search for
 
     Returns:
-        Account or None: The account object if found and active, None otherwise
+        Account or None: The account if found, else None
     """
-    return db.query(Account).filter(
-        and_(Account.email_address == email_address, Account.active == True)
-    ).first()
+    return db.query(Account).filter(Account.email_address == email).first()
 
 def get_club_accounts(db: Session, club_id: int, skip: int = 0, limit: int = 100):
     """
@@ -153,35 +157,31 @@ def authenticate_account(db: Session, email_address: str, password: str):
         return None
 
     # Update last login timestamp
-    from datetime import datetime
     account.last_login_at = datetime.utcnow()
     db.commit()
 
     return account
 
-def update_account(db: Session, account_id: int, account: AccountUpdate):
-    """
-    Update an existing account
 
-    Args:
-        db: Database session
-        account_id: ID of the account to update
-        account: AccountUpdate schema with the new data
-
-    Returns:
-        Account or None: Updated account object if successful, None if not found
-    """
-    # Find the account to update (only if active)
+def update_account(db: Session, account_id: int, account_update: AccountUpdate):
+    """Update an account with new data"""
     db_account = get_account(db, account_id)
-    if db_account is None:
+    if not db_account:
         return None
 
-    # Apply partial updates - only update fields that were provided
-    update_data = account.model_dump(exclude_unset=True)
+    # Check for email conflicts if email is being updated
+    if account_update.email_address and account_update.email_address != db_account.email_address:
+        existing_account = get_account_by_email(
+            db, account_update.email_address)
+        if existing_account and existing_account.id != account_id:
+            raise ValueError("Email already registered")
+
+    # Update fields
+    update_data = account_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_account, field, value)
 
-    # Save changes and refresh to get updated timestamp
+    db_account.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(db_account)
     return db_account

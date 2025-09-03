@@ -45,11 +45,11 @@ class AccountUpdate(BaseModel):
     All fields are optional to support partial updates.
     Password updates should be handled through a separate endpoint for security.
     """
-    email_address: Optional[EmailStr] = Field(None, description="New email address")
-    first_name: Optional[str] = Field(None, min_length=1, max_length=100, description="New first name")
-    last_name: Optional[str] = Field(None, min_length=1, max_length=100, description="New last name")
-    active: Optional[bool] = Field(None, description="Whether the account is active")
-    email_verified: Optional[bool] = Field(None, description="Whether the email has been verified")
+    email_address: Optional[EmailStr] = None
+    first_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=50)
+    # Add this line if you want to allow club updates
+    club_id: Optional[int] = None
 
 # Schema for password changes (separate from general updates for security)
 class AccountPasswordUpdate(BaseModel):
