@@ -1,93 +1,85 @@
 # YoApunto API
 
-A modern FastAPI-based REST API for managing accounts, clubs and games with comprehensive CRUD operations, many-to-many associations, authentication, validation, and soft delete functionality.
+A comprehensive FastAPI application for managing clubs, games, accounts, and authentication. This API provides secure user management, club administration, and game catalog functionality with JWT-based authentication.
 
 ## Features
 
-- 🚀 **FastAPI** - Modern, fast web framework for building APIs
-- � **User Management** - Complete account system with authentication and profile management
-- 🔐 **Password Security** - Secure password hashing with bcrypt
-- 📧 **Email Validation** - Built-in email validation and uniqueness constraints
-- �🗄️ **SQLAlchemy** - Powerful SQL toolkit and ORM with many-to-many relationships
-- ✅ **Pydantic** - Data validation using Python type hints
-- 🧪 **Comprehensive Testing** - Unit and integration tests with pytest organized by entity
-- 🔄 **Soft Delete** - Accounts, clubs and games are deactivated, not permanently deleted
-- 📝 **Input Validation** - Field length limits and required field validation
-- 🏗️ **Clean Architecture** - Organized code structure with separation of concerns
-- 📚 **Auto-generated Documentation** - Interactive API docs with Swagger UI
-- 🔗 **Entity Associations** - Many-to-many relationships between clubs and games
-- 🎮 **Game Management** - Complete game system with player/team composition rules
+- 🔐 **JWT Authentication & Authorization** (login, logout, token refresh)
+- 👥 **User Account Management** (registration, profile updates, password changes)
+- 🏟️ **Club Management** (create, update, soft delete clubs)
+- 🎮 **Game Catalog** (manage available games and their configurations)
+- 🔗 **Club-Game Relationships** (associate games with clubs)
+- 🛡️ **Security Features** (password hashing with bcrypt, email validation)
+- 📧 **Email Verification** (request and confirm email verification)
+- 🔄 **Password Reset** (secure password reset functionality)
+- 🔄 **Token Refresh** (secure token renewal system)
+- 🗑️ **Soft Delete** (accounts, clubs, and games can be deactivated instead of deleted)
+- ✅ **Comprehensive Testing** (127+ tests with excellent coverage)
+
+## Tech Stack
+
+- **FastAPI** - Modern, fast web framework for building APIs
+- **SQLAlchemy** - SQL toolkit and ORM
+- **PostgreSQL** - Primary database (SQLite for testing)
+- **Alembic** - Database migration tool
+- **Pydantic** - Data validation using Python type hints
+- **JWT** - JSON Web Tokens for authentication
+- **Bcrypt** - Secure password hashing
+- **Pytest** - Testing framework
 
 ## Project Structure
 
 ```
 api.yoapunto/
 ├── app/
-│   ├── api/
-│   │   └── v1/
-│   │       ├── endpoints/
-│   │       │   ├── accounts.py        # Account API endpoints
-│   │       │   ├── clubs.py          # Club API endpoints
-│   │       │   ├── games.py          # Game API endpoints
-│   │       │   └── club_games.py     # Club-Game association endpoints
-│   │       └── api.py                # API router configuration
+│   ├── api/v1/
+│   │   ├── endpoints/
+│   │   │   ├── auth.py           # Authentication endpoints
+│   │   │   ├── accounts.py       # Account management endpoints
+│   │   │   ├── clubs.py          # Club management endpoints
+│   │   │   ├── games.py          # Game catalog endpoints
+│   │   │   └── club_games.py     # Club-game relationship endpoints
+│   │   └── api.py                # API router configuration
 │   ├── crud/
-│   │   ├── account.py                # Account database operations
-│   │   ├── club.py                   # Club database operations
-│   │   └── game.py                   # Game database operations
+│   │   ├── account.py            # Account database operations
+│   │   ├── club.py               # Club database operations
+│   │   ├── game.py               # Game database operations
+│   │   └── club_game.py          # Club-game relationship operations
 │   ├── models/
-│   │   ├── account.py                # Account SQLAlchemy model
-│   │   ├── club.py                   # Club SQLAlchemy model
-│   │   ├── game.py                   # Game SQLAlchemy model
-│   │   └── club_games.py             # Many-to-many association table
-│   └── schemas/
-│       ├── account.py                # Account Pydantic schemas
-│       ├── club.py                   # Club Pydantic schemas
-│       └── game.py                   # Game Pydantic schemas
+│   │   ├── account.py            # Account SQLAlchemy model
+│   │   ├── club.py               # Club SQLAlchemy model
+│   │   ├── game.py               # Game SQLAlchemy model
+│   │   └── club_game.py          # Club-game relationship model
+│   ├── schemas/
+│   │   ├── account.py            # Account Pydantic schemas
+│   │   ├── club.py               # Club Pydantic schemas
+│   │   ├── game.py               # Game Pydantic schemas
+│   │   └── club_game.py          # Club-game relationship schemas
+│   └── auth_helper.py            # JWT and authentication utilities
 ├── tests/
-│   ├── accounts/                     # Account-specific tests
-│   │   ├── test_accounts_api.py      # Account API endpoint tests
-│   │   ├── test_accounts_crud.py     # Account CRUD operation tests
-│   │   └── test_accounts_models.py   # Account model tests
-│   ├── clubs/                        # Club-specific tests
-│   │   ├── test_clubs_api.py         # Club API endpoint tests
-│   │   ├── test_clubs_crud.py        # Club CRUD operation tests
-│   │   ├── test_clubs_models.py      # Club model tests
-│   │   └── test_clubs_games.py       # Club-Games association tests
-│   ├── games/                        # Game-specific tests
-│   │   ├── test_games_api.py         # Game API endpoint tests
-│   │   ├── test_games_crud.py        # Game CRUD operation tests
-│   │   ├── test_games_models.py      # Game model tests
-│   │   └── test_games_clubs.py       # Game-Clubs relationship tests
-│   └── conftest.py                   # Shared test configuration
-├── conftest.py                       # Test configuration
-├── database.py                       # Database setup
-├── main.py                           # FastAPI application
-├── requirements.txt                  # Python dependencies
-└── pyproject.toml                    # Test configuration
+│   ├── auth/                     # Authentication tests
+│   ├── accounts/                 # Account tests
+│   ├── clubs/                    # Club tests
+│   ├── games/                    # Game tests
+│   └── club_games/               # Club-game relationship tests
+├── alembic/                      # Database migrations
+├── database.py                   # Database configuration
+├── main.py                       # FastAPI application entry point
+└── requirements.txt              # Python dependencies
 ```
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.8+
-- pip (Python package manager)
-
-### Setup
-
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/api.yoapunto.git
+   git clone <repository-url>
    cd api.yoapunto
    ```
 
-2. **Create and activate a virtual environment:**
+2. **Create and activate virtual environment:**
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # On macOS/Linux
-   # or
-   .venv\Scripts\activate     # On Windows
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. **Install dependencies:**
@@ -98,10 +90,15 @@ api.yoapunto/
 4. **Set up environment variables:**
    ```bash
    cp .env.example .env
-   # Edit .env with your database configuration
+   # Edit .env with your database and JWT configuration
    ```
 
-5. **Run the application:**
+5. **Run database migrations:**
+   ```bash
+   alembic upgrade head
+   ```
+
+6. **Start the development server:**
    ```bash
    uvicorn main:app --reload
    ```
@@ -111,83 +108,82 @@ The API will be available at `http://localhost:8000`
 ## API Documentation
 
 Once the server is running, you can access:
-
-- **Interactive API Documentation (Swagger UI):** `http://localhost:8000/docs`
-- **Alternative API Documentation (ReDoc):** `http://localhost:8000/redoc`
+- **Interactive API docs (Swagger UI):** http://localhost:8000/docs
+- **Alternative API docs (ReDoc):** http://localhost:8000/redoc
 
 ## API Endpoints
 
+### Authentication
+
+- `POST /api/v1/auth/login` - Authenticate user and receive JWT token
+- `POST /api/v1/auth/logout` - Logout (client-side token invalidation)
+- `POST /api/v1/auth/refresh` - Refresh access token using refresh token
+- `POST /api/v1/auth/password-reset/request` - Request password reset
+- `POST /api/v1/auth/password-reset/confirm` - Confirm password reset
+- `POST /api/v1/auth/verify-email/request` - Request email verification
+- `POST /api/v1/auth/verify-email/confirm` - Confirm email verification
+
 ### Accounts
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/accounts/` | List all active accounts |
-| `POST` | `/api/v1/accounts/` | Create a new account |
-| `GET` | `/api/v1/accounts/{id}` | Get a specific account |
-| `PUT` | `/api/v1/accounts/{id}` | Update an account |
-| `DELETE` | `/api/v1/accounts/{id}` | Deactivate an account (soft delete) |
-| `GET` | `/api/v1/accounts/club/{club_id}` | Get all accounts for a specific club |
+- `GET /api/v1/accounts/` - List all active accounts
+- `POST /api/v1/accounts/` - Create a new account (registration)
+- `GET /api/v1/accounts/{id}` - Get account details
+- `PUT /api/v1/accounts/{id}` - Update account information
+- `DELETE /api/v1/accounts/{id}` - Deactivate account (soft delete)
+- `GET /api/v1/accounts/club/{club_id}` - Get accounts for a specific club
 
 ### Clubs
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/clubs/` | List all active clubs |
-| `POST` | `/api/v1/clubs/` | Create a new club |
-| `GET` | `/api/v1/clubs/{id}` | Get a specific club |
-| `PUT` | `/api/v1/clubs/{id}` | Update a club |
-| `DELETE` | `/api/v1/clubs/{id}` | Deactivate a club (soft delete) |
+- `GET /api/v1/clubs/` - List all active clubs
+- `POST /api/v1/clubs/` - Create a new club
+- `GET /api/v1/clubs/{id}` - Get club details
+- `PUT /api/v1/clubs/{id}` - Update club information
+- `DELETE /api/v1/clubs/{id}` - Deactivate club (soft delete)
 
 ### Games
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/games/` | List all active games |
-| `POST` | `/api/v1/games/` | Create a new game |
-| `GET` | `/api/v1/games/{id}` | Get a specific game |
-| `PUT` | `/api/v1/games/{id}` | Update a game |
-| `DELETE` | `/api/v1/games/{id}` | Deactivate a game (soft delete) |
+- `GET /api/v1/games/` - List all active games
+- `POST /api/v1/games/` - Create a new game
+- `GET /api/v1/games/{id}` - Get game details
+- `PUT /api/v1/games/{id}` - Update game information
+- `DELETE /api/v1/games/{id}` - Deactivate game (soft delete)
 
-### Club-Games Associations (Nested Resources)
+### Club-Game Relationships
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/clubs/{club_id}/games/` | Get all games that a club plays |
-| `POST` | `/api/v1/clubs/{club_id}/games/{game_id}` | Add a game to a club |
-| `GET` | `/api/v1/clubs/{club_id}/games/{game_id}` | Check if a club plays a specific game |
-| `DELETE` | `/api/v1/clubs/{club_id}/games/{game_id}` | Remove a game from a club |
+- `GET /api/v1/clubs/{club_id}/games` - Get games associated with a club
+- `POST /api/v1/clubs/{club_id}/games` - Associate a game with a club
+- `DELETE /api/v1/clubs/{club_id}/games/{game_id}` - Remove game from club
+
+## Data Models
 
 ### Account Model
-
 ```json
 {
   "id": 1,
-  "email": "user@example.com",
+  "email_address": "user@example.com",
   "first_name": "John",
   "last_name": "Doe",
   "club_id": 1,
   "active": true,
-  "created_at": "2025-08-17T10:30:00Z",
-  "updated_at": "2025-08-17T10:30:00Z"
+  "created_at": "2023-01-01T00:00:00",
+  "updated_at": null
 }
 ```
 
 ### Club Model
-
 ```json
 {
   "id": 1,
-  "nickname": "My Awesome Club",
-  "creator": "john_doe",
-  "thumbnail_url": "https://example.com/image.jpg",
+  "nickname": "Basketball Club",
+  "creator": "John Doe",
+  "thumbnail_url": "https://example.com/club-image.jpg",
   "active": true,
-  "created_at": "2025-08-11T10:30:00Z",
-  "updated_at": "2025-08-11T10:30:00Z"
+  "created_at": "2023-01-01T00:00:00",
+  "updated_at": null
 }
 ```
 
 ### Game Model
-
 ```json
 {
   "id": 1,
@@ -198,280 +194,261 @@ Once the server is running, you can access:
   "max_number_of_teams": 2,
   "min_number_of_players": 10,
   "max_number_of_players": 10,
-  "min_number_of_players_per_teams": 5,
-  "max_number_of_players_per_teams": 5,
   "thumbnail": "https://example.com/basketball.jpg",
   "active": true,
-  "created_at": "2025-08-13T10:30:00Z",
-  "updated_at": "2025-08-13T10:30:00Z"
+  "created_at": "2023-01-01T00:00:00",
+  "updated_at": null
 }
 ```
 
-#### Field Validation
+## Field Validation
 
-**Account Fields:**
-- **email**: Required, valid email format, unique across all accounts
-- **first_name**: Required, 1-50 characters
-- **last_name**: Required, 1-50 characters
-- **password**: Required for creation, 8-100 characters (hashed in database)
-- **club_id**: Optional, foreign key reference to clubs table
-- **active**: Boolean, defaults to `true`
+### Account Fields
+- **email_address**: Must be valid email format, unique across system
+- **first_name**: 1-50 characters, required
+- **last_name**: 1-50 characters, required
+- **password**: 8-100 characters (stored as bcrypt hash), required for creation
+- **club_id**: Optional foreign key to Club model
 
-**Club Fields:**
-- **nickname**: Required, 1-50 characters
-- **creator**: Required, 1-50 characters
-- **thumbnail_url**: Optional, URL to club image
-- **active**: Boolean, defaults to `true`
+### Club Fields
+- **nickname**: 1-100 characters, required
+- **creator**: 1-100 characters, required
+- **thumbnail_url**: Valid URL format, optional
 
-**Game Fields:**
-- **name**: Required, 1-100 characters
-- **description**: Optional, up to 500 characters
-- **game_composition**: Required, 1-50 characters (e.g., "player", "team", "player_or_team")
-- **min_number_of_players**: Required, must be >= 1
-- **max_number_of_players**: Optional, must be >= 1 if specified
-- **min_number_of_teams**: Optional, must be >= 1 if specified
-- **max_number_of_teams**: Optional, must be >= 1 if specified
-- **min_number_of_players_per_teams**: Optional, must be >= 1 if specified
-- **max_number_of_players_per_teams**: Optional, must be >= 1 if specified
-- **thumbnail**: Optional, URL or path to game thumbnail image
+### Game Fields
+- **name**: 1-100 characters, required
+- **description**: Optional text description
+- **game_composition**: Required (individual, team, group)
+- **min_number_of_teams**: Optional integer, minimum 1
+- **max_number_of_teams**: Optional integer, must be >= min_number_of_teams
+- **min_number_of_players**: Required integer, minimum 1
+- **max_number_of_players**: Optional integer, must be >= min_number_of_players
+- **thumbnail**: Optional URL for game image
 
-### Example Requests
+## Example Requests
 
-**Create an account:**
+### Authentication
+
+#### Register Account
 ```bash
-curl -X POST "http://localhost:8000/api/v1/accounts/" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "email": "john.doe@example.com",
-       "first_name": "John",
-       "last_name": "Doe",
-       "password": "securepassword123",
-       "club_id": 1
-     }'
+curl -X POST http://localhost:8000/api/v1/accounts/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email_address": "newuser@example.com",
+    "password": "securepassword123",
+    "first_name": "Jane",
+    "last_name": "Smith",
+    "club_id": 1
+  }'
 ```
 
-**Update an account:**
+#### Login
 ```bash
-curl -X PUT "http://localhost:8000/api/v1/accounts/1" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "first_name": "Johnny",
-       "last_name": "Smith"
-     }'
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email_address": "user@example.com",
+    "password": "securepassword123"
+  }'
 ```
 
-**Update account password:**
+#### Use JWT Token
 ```bash
-curl -X PUT "http://localhost:8000/api/v1/accounts/1" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "current_password": "oldpassword123",
-       "new_password": "newpassword456"
-     }'
+curl -X GET http://localhost:8000/api/v1/accounts/1 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
 ```
 
-**Get accounts for a specific club:**
+### Account Management
+
+#### Update Account
 ```bash
-curl "http://localhost:8000/api/v1/accounts/club/1"
+curl -X PUT http://localhost:8000/api/v1/accounts/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "first_name": "UpdatedName",
+    "email_address": "updated@example.com"
+  }'
 ```
 
-**Create a club:**
+#### Change Password
 ```bash
-curl -X POST "http://localhost:8000/api/v1/clubs/" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "nickname": "Tech Enthusiasts",
-       "creator": "alice_smith",
-       "thumbnail_url": "https://example.com/tech-club.jpg"
-     }'
+curl -X PUT http://localhost:8000/api/v1/accounts/1/password \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "current_password": "oldpassword123",
+    "new_password": "newpassword123"
+  }'
 ```
 
-**Create a game:**
+### Club Management
+
+#### Create Club
 ```bash
-curl -X POST "http://localhost:8000/api/v1/games/" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "name": "Basketball",
-       "description": "Team sport with two teams of five players",
-       "game_composition": "team",
-       "min_number_of_teams": 2,
-       "max_number_of_teams": 2,
-       "min_number_of_players": 10,
-       "max_number_of_players": 10,
-       "min_number_of_players_per_teams": 5,
-       "max_number_of_players_per_teams": 5,
-       "thumbnail": "https://example.com/basketball.jpg"
-     }'
+curl -X POST http://localhost:8000/api/v1/clubs/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "nickname": "Soccer Club",
+    "creator": "Club Founder",
+    "thumbnail_url": "https://example.com/soccer-club.jpg"
+  }'
 ```
 
-**Add a game to a club:**
+### Game Management
+
+#### Create Game
 ```bash
-curl -X POST "http://localhost:8000/api/v1/clubs/1/games/1"
-```
-
-**Get all games for a club:**
-```bash
-curl "http://localhost:8000/api/v1/clubs/1/games/"
-```
-
-**Remove a game from a club:**
-```bash
-curl -X DELETE "http://localhost:8000/api/v1/clubs/1/games/1"
-```
-
-## Database Configuration
-
-The application supports both SQLite (for development) and PostgreSQL (for production).
-
-### SQLite (Default)
-```env
-DATABASE_URL=sqlite:///./yoapunto.db
-```
-
-### PostgreSQL
-```env
-DATABASE_URL=postgresql://username:password@localhost/database_name
+curl -X POST http://localhost:8000/api/v1/games/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "name": "Soccer",
+    "description": "The world's most popular sport",
+    "game_composition": "team",
+    "min_number_of_teams": 2,
+    "max_number_of_teams": 2,
+    "min_number_of_players": 22,
+    "max_number_of_players": 22,
+    "thumbnail": "https://example.com/soccer.jpg"
+  }'
 ```
 
 ## Testing
 
-The project includes comprehensive tests at multiple levels, organized by entity:
+Run the complete test suite:
 
-### Run All Tests
 ```bash
+# Run all tests
 pytest
-```
 
-### Run Specific Test Categories
-```bash
-# Account tests
-pytest tests/accounts -v
-
-# Club tests
-pytest tests/clubs -v
-
-# Game tests
-pytest tests/games -v
-
-# API tests
-pytest tests/*/test_*_api.py -v
-```
-
-### Run Tests with Coverage
-```bash
+# Run with coverage
 pytest --cov=app
+
+# Run specific test categories
+pytest tests/auth/ -v           # Authentication tests
+pytest tests/accounts/ -v       # Account tests
+pytest tests/clubs/ -v          # Club tests
+pytest tests/games/ -v          # Game tests
+
+# Run tests with detailed output
+pytest -v --tb=short
 ```
 
 ### Test Categories
+- **Authentication Tests**: JWT token creation, validation, login/logout flows
+- **Account Tests**: User registration, profile management, password changes
+- **Club Tests**: Club CRUD operations and relationships
+- **Game Tests**: Game catalog management and validation
+- **Integration Tests**: End-to-end API workflow testing
 
-- **Model Tests**: Test SQLAlchemy model validation and behavior
-- **CRUD Tests**: Test database operations and business logic
-- **API Tests**: Test HTTP endpoints, status codes, and response formats
+## Environment Variables
 
-## Development
-
-### Code Organization
-
-The project follows a clean architecture pattern:
-
-- **`app/models/`**: SQLAlchemy models (database schema)
-- **`app/schemas/`**: Pydantic models (API validation)
-- **`app/crud/`**: Database operations (business logic)
-- **`app/api/`**: FastAPI endpoints (HTTP layer)
-
-### Adding New Features
-
-1. **Add model** in `app/models/`
-2. **Add schemas** in `app/schemas/`
-3. **Add CRUD operations** in `app/crud/`
-4. **Add API endpoints** in `app/api/v1/endpoints/`
-5. **Add tests** in `tests/`
-
-### Code Quality
-
-The project includes:
-
-- **Type hints** throughout the codebase
-- **Pydantic validation** for all API inputs
-- **Comprehensive testing** with high coverage
-- **Clean architecture** with separation of concerns
-
-## Deployment
-
-### Environment Variables
-
-Set these environment variables in production:
+Create a `.env` file with the following variables:
 
 ```env
-DATABASE_URL=your_production_database_url
+# Database
+DATABASE_URL=postgresql://username:password@localhost/yoapunto
+TEST_DATABASE_URL=sqlite:///./test.db
+
+# JWT Configuration
+SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Email Configuration (for verification and password reset)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 ```
 
-### Docker (Optional)
+## Dependencies
 
-Create a `Dockerfile` for containerized deployment:
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
+fastapi==0.112.0
+uvicorn==0.30.1
+sqlalchemy==2.0.31
+alembic==1.13.2
+psycopg[binary]==3.2.9
+python-dotenv==1.0.1
+pydantic==2.8.2
+email-validator==2.1.0
+
+# Testing dependencies
+pytest==8.3.2
+pytest-asyncio==0.23.8
+httpx==0.27.0
+pytest-mock==3.14.0
+pytest-cov==5.0.0
+
+# Authentication dependencies
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.9
+bcrypt==4.3.0
+passlib[bcrypt]==1.7.4
+```
+
+## Security Features
+
+- 🔐 **JWT Authentication**: Secure token-based authentication
+- 🛡️ **Password Hashing**: Bcrypt with salt for secure password storage
+- 📧 **Email Validation**: Robust email format validation
+- 🔄 **Token Refresh**: Secure token renewal without re-authentication
+- 🚫 **Soft Delete**: Data preservation with deactivation instead of deletion
+- ✅ **Input Validation**: Comprehensive Pydantic validation for all inputs
+- 🔒 **CORS Protection**: Configurable cross-origin request handling
+
+## API Versioning
+
+The API is versioned using URL prefixes:
+- Current version: `/api/v1/`
+- Future versions can be added as `/api/v2/` etc.
+
+## Error Handling
+
+The API returns consistent error responses:
+
+```json
+{
+  "detail": "Error description",
+  "status_code": 400
+}
+```
+
+Common status codes:
+- `200` - Success
+- `201` - Created
+- `400` - Bad Request (validation errors)
+- `401` - Unauthorized (authentication required)
+- `403` - Forbidden (insufficient permissions)
+- `404` - Not Found
+- `422` - Unprocessable Entity (validation errors)
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch
 3. Make your changes
 4. Add tests for your changes
-5. Ensure all tests pass (`pytest`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
-
-## Dependencies
-
-### Core Dependencies
-- **FastAPI** - Web framework
-- **Uvicorn** - ASGI server
-- **SQLAlchemy** - ORM
-- **Pydantic** - Data validation
-- **psycopg** - PostgreSQL adapter
-- **python-dotenv** - Environment variable management
-- **bcrypt** - Password hashing
-- **passlib** - Password context management
-- **email-validator** - Email validation
-
-### Development Dependencies
-- **pytest** - Testing framework
-- **httpx** - HTTP client for testing
-- **pytest-asyncio** - Async testing support
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-If you encounter any issues or have questions:
-
-1. Check the [API documentation](http://localhost:8000/docs) when running locally
-2. Review the test files for usage examples
-3. Open an issue on GitHub
+5. Ensure all tests pass
+6. Submit a pull request
 
 ## Roadmap
 
-- [ ] User authentication with JWT tokens
-- [ ] User roles and permissions system
-- [ ] Club membership management with account associations
-- [ ] Enter Game integration
-- [ ] Associate clubs with games where the relationship with clubs and games is many-to-many
-- [ ] Password reset functionality
-- [ ] Email notifications
-- [ ] API rate limiting
-- [ ] Docker containerization
-- [ ] CI/CD pipeline setup
+- [x] JWT authentication system
+- [x] Account management with secure password handling
+- [x] Club and game management
+- [x] Comprehensive test suite
+- [x] Token refresh functionality
+- [x] Email verification system
+- [x] Password reset functionality
+- [ ] Role-based access control (admin, member, etc.)
+- [ ] Email notifications and templates
+- [ ] API monitoring and logging
+- [ ] File upload for club/game thumbnails
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
